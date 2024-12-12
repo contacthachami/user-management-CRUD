@@ -1,57 +1,114 @@
-import React, { useState } from 'react';
+// Login.js
+import React, { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+function Login({ onLoginSuccess }) {
+  const [isSignIn, setIsSignIn] = useState(true); // Toggle between Sign-In and Create Account
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (username === 'admin' && password === 'password') {
-      onLogin();
+  // Handle input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle Sign-In
+  const handleSignIn = () => {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find(
+      (u) => u.email === formData.email && u.password === formData.password
+    );
+
+    if (user) {
+      toast.success("Login successful!");
+      localStorage.setItem("isAuthenticated", "true");
+      onLoginSuccess();
     } else {
-      setError('Nom d\'utilisateur ou mot de passe incorrect.');
+      toast.error("Invalid email or password!");
+    }
+  };
+
+  // Handle Create Account
+  const handleCreateAccount = () => {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const userExists = users.some((u) => u.email === formData.email);
+
+    if (userExists) {
+      toast.error("Account already exists with this email!");
+    } else if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long!");
+    } else {
+      users.push(formData);
+      localStorage.setItem("users", JSON.stringify(users));
+      toast.success("Account created successfully!");
+      setIsSignIn(true); // Switch to Sign-In view
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded shadow-lg p-8 animate-fadeIn">
-        <h2 className="text-2xl font-bold text-center mb-4">Connexion</h2>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Nom d'utilisateur
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300 ease-in-out"
-          >
-            Se connecter
-          </button>
-        </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          {isSignIn ? "Sign In" : "Create Account"}
+        </h2>
+
+        {/* Email Input */}
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter your email"
+          value={formData.email}
+          onChange={handleInputChange}
+          className="w-full p-3 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        {/* Password Input */}
+        <input
+          type="password"
+          name="password"
+          placeholder="Enter your password"
+          value={formData.password}
+          onChange={handleInputChange}
+          className="w-full p-3 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        {/* Action Button */}
+        <button
+          onClick={isSignIn ? handleSignIn : handleCreateAccount}
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition"
+        >
+          {isSignIn ? "Sign In" : "Create Account"}
+        </button>
+
+        {/* Toggle View */}
+        <p className="mt-4 text-center text-sm">
+          {isSignIn ? (
+            <>
+              Don't have an account?{" "}
+              <span
+                className="text-blue-500 cursor-pointer"
+                onClick={() => setIsSignIn(false)}
+              >
+                Create one
+              </span>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <span
+                className="text-blue-500 cursor-pointer"
+                onClick={() => setIsSignIn(true)}
+              >
+                Sign In
+              </span>
+            </>
+          )}
+        </p>
       </div>
+      <ToastContainer />
     </div>
   );
-};
+}
 
 export default Login;
