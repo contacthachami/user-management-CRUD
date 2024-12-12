@@ -36,6 +36,19 @@ const UserForm = () => {
     setName(e.target.value);
     setError('');
   };
+  // Ajoutez ce bouton dans le composant Dashboard (ou ailleurs dans l'interface CRUD)
+const handleLogout = () => {
+  localStorage.removeItem('isAuthenticated');
+  window.location.href = '/login'; // Redirige vers la page de connexion
+};
+
+// Exemple dans Dashboard :
+<button
+  onClick={handleLogout}
+  className="bg-red-500 text-white py-1 px-4 rounded hover:bg-red-600"
+>
+  Déconnexion
+</button>
 
   return (
     <div className="mb-4">
